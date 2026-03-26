@@ -1,0 +1,35 @@
+name: Update Date in README Title
+
+on:
+  schedule:
+    - cron: '0 0 * * 6' # Runs every Saturday at midnight UTC
+  workflow_dispatch: # Allows you to run this workflow manually
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    
+    # This is the new block that fixes the permission error
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Update date in README
+        run: |
+          sed -i "s/\[.*Latest Project\]/\[$(date +'%d %b %Y') Latest Project\]/" Readme.md
+
+      - name: Commit and push if changed
+        run: |
+          if ! git diff --quiet Readme.md; then
+            echo "Readme.md has been updated. Committing changes."
+            git config --global user.name 'github-actions[bot]'
+            git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+            git add Readme.md
+            git commit -m "docs: Updated Project List"
+            git push
+          else
+            echo "No changes to commit. Readme.md is up-to-date."
+          fi
